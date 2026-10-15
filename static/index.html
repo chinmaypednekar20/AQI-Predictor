@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="Air Quality Index (AQI) Comparative Machine Learning System: Random Forest vs. Support Vector Regression vs. Gradient Boosting.">
+  <title>Air Quality Index (AQI) Machine Learning Forecasting System</title>
+
+  <!-- Typography: Google Fonts Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Chart.js CDN for high-performance canvas visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Vanilla CSS Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+  <div class="app-container">
+
+    <!-- Top Navbar & Header -->
+    <header class="top-navbar">
+      <div class="brand-section">
+        <h1>
+          Air Quality Index (AQI) Forecasting System
+        </h1>
+      </div>
+
+      <div class="nav-actions">
+        <div class="status-indicator" id="dataset-status-pill">
+          <span class="status-dot"></span>
+          <span id="dataset-status-text">Loading dataset diagnostics...</span>
+        </div>
+        <button class="btn-theme-toggle" id="btn-theme-toggle" title="Toggle Light / Dark Theme"
+          aria-label="Toggle Theme">
+          <span id="theme-icon">☀️</span>
+          <span id="theme-label">Light</span>
+        </button>
+        <button class="btn-retrain" id="btn-retrain" title="Retrain all 3 algorithms with dataset on disk">
+          Retrain Models
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs (2 Core Focused Tabs Only) -->
+    <nav class="tabs-nav" aria-label="Project Navigation Tabs">
+      <button class="tab-btn active" data-tab="tab-evaluation" id="tab-btn-eval">
+        Model Evaluation & Comparison
+      </button>
+      <button class="tab-btn" data-tab="tab-simulator" id="tab-btn-sim">
+        Real-Time AQI Simulator
+      </button>
+    </nav>
+
+    <!-- ====================================================================
+         TAB 1: MODEL EVALUATION & COMPARISON
+         ==================================================================== -->
+    <main class="tab-content active" id="tab-evaluation">
+
+      <!-- 1. Algorithm Architecture Overview -->
+      <section class="grid-3" aria-label="Model Architectures">
+        <!-- Random Forest -->
+        <article class="glass-card arch-card rf">
+          <span class="arch-badge">Bagging Ensemble</span>
+          <h2 class="arch-title">Random Forest Regressor</h2>
+          <p class="arch-desc">
+            Constructs 120 decorrelated decision trees using bootstrap aggregation. Aggregates tree leaves to suppress
+            variance and models non-linear pollutant interactions without scaling.
+          </p>
+          <div class="arch-params">
+            <code>n_estimators=120, max_depth=16, min_samples_split=5</code>
+          </div>
+        </article>
+
+        <!-- Support Vector Regression -->
+        <article class="glass-card arch-card svr">
+          <span class="arch-badge">Kernel Method</span>
+          <h2 class="arch-title">Support Vector Regression (SVR)</h2>
+          <p class="arch-desc">
+            Solves structural risk minimization in Hilbert space via an RBF kernel. Bounds regression errors within a
+            symmetric ε-insensitive loss tube, paired with strict standard scaling.
+          </p>
+          <div class="arch-params">
+            <code>kernel='rbf', C=100.0, epsilon=0.1, scaler=StandardScaler</code>
+          </div>
+        </article>
+
+        <!-- Gradient Boosting Regressor -->
+        <article class="glass-card arch-card gbr">
+          <span class="arch-badge">Boosting Ensemble</span>
+          <h2 class="arch-title">Gradient Boosting Regressor</h2>
+          <p class="arch-desc">
+            Builds additive sequential regression trees where each successive stage fits the negative gradient
+            (pseudo-residuals) of least-squares loss, minimizing bias aggressively.
+          </p>
+          <div class="arch-params">
+            <code>n_estimators=120, learning_rate=0.1, max_depth=5</code>
+          </div>
+        </article>
+      </section>
+
+      <!-- 2. Performance Benchmark KPI Cards -->
+      <div class="section-header">
+        <h2 class="section-title">Performance Benchmark (Out-of-Sample Test Horizon: 5,472 Daily Records)</h2>
+      </div>
+
+      <section class="grid-3" aria-label="Benchmark KPI Metrics">
+        <!-- RMSE -->
+        <div class="glass-card kpi-card">
+          <div class="kpi-title">
+            <span>Root Mean Squared Error (RMSE)</span>
+            <span class="kpi-winner-pill" id="kpi-rmse-winner">Best: Calculating...</span>
+          </div>
+          <div class="kpi-scores-row">
+            <div class="kpi-item">
+              <div class="kpi-val" style="color: #60a5fa;" id="kpi-rf-rmse">--</div>
+              <div class="kpi-label">Random Forest</div>
+            </div>
+            <div class="kpi-item">
+              <div class="kpi-val" style="color: #fbbf24;" id="kpi-svr-rmse">--</div>
+              <div class="kpi-label">SVR</div>
+            </div>
+            <div class="kpi-item">
+              <div class="kpi-val" style="color: #c084fc;" id="kpi-gbr-rmse">--</div>
+              <div class="kpi-label">Gradient Boost</div>
+            </div>
+          </div>
+          <p class="kpi-subtext">Penalizes large outlier blunders quadratically (Lower is better)</p>
+        </div>
+
+        <!-- MAE -->
+        <div class="glass-card kpi-card">
+          <div class="kpi-title">
+            <span>Mean Absolute Error (MAE)</span>
+            <span class="kpi-winner-pill" id="kpi-mae-winner">Best: Calculating...</span>
+          </div>
+          <div class="kpi-scores-row">
+            <div class="kpi-item">
+              <div class="kpi-val" style="color: #60a5fa;" id="kpi-rf-mae">--</div>
+              <div class="kpi-label">Random Forest</div>
+            </div>
+            <div class="kpi-item">
+              <div class="kpi-val" style="color: #fbbf24;" id="kpi-svr-mae">--</div>
+              <div class="kpi-label">SVR</div>
+            </div>
+            <div class="kpi-item">
+              <div class="kpi-val" style="color: #c084fc;" id="kpi-gbr-mae">--</div>
+              <div class="kpi-label">Gradient Boost</div>
+            </div>
+          </div>
+          <p class="kpi-subtext">Average absolute deviation in AQI points (Lower is better)</p>
+        </div>
+
+        <!-- R² -->
+        <div class="glass-card kpi-card">
+          <div class="kpi-title">
+            <span>Coefficient of Determination (R²)</span>
+            <span class="kpi-winner-pill" id="kpi-r2-winner">Best: Calculating...</span>
+          </div>
+          <div class="kpi-scores-row">
+            <div class="kpi-item">
+              <div class="kpi-val" style="color: #60a5fa;" id="kpi-rf-r2">--</div>
+              <div class="kpi-label">Random Forest</div>
+            </div>
+            <div class="kpi-item">
+              <div class="kpi-val" style="color: #fbbf24;" id="kpi-svr-r2">--</div>
+              <div class="kpi-label">SVR</div>
+            </div>
+            <div class="kpi-item">
+              <div class="kpi-val" style="color: #c084fc;" id="kpi-gbr-r2">--</div>
+              <div class="kpi-label">Gradient Boost</div>
+            </div>
+          </div>
+          <p class="kpi-subtext">Proportion of variance explained by model (Higher is better, max 1.0)</p>
+        </div>
+      </section>
+
+      <!-- 3. Side-by-Side Visualizations -->
+      <section class="grid-2">
+        <div class="glass-card">
+          <div class="section-header">
+            <h3 class="section-title">Comparative Metric Benchmark</h3>
+            <span class="section-subtitle">Side-by-Side Model Comparison</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="chart-metrics"></canvas>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="section-header">
+            <h3 class="section-title">Pollutant Feature Importance</h3>
+            <span class="section-subtitle">Random Forest (MDI) vs. Gradient Boosting</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="chart-feature-importance"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Chronological Time-Series Line Chart -->
+      <section class="glass-card" style="margin-bottom: 24px;">
+        <div class="section-header">
+          <h3 class="section-title">Out-of-Sample Chronological Trajectory (Actual vs. Forecasts)</h3>
+          <span class="section-subtitle">Test Partition Horizon (2019-11-08 to 2020-07-01)</span>
+        </div>
+        <div class="chart-container-large">
+          <canvas id="chart-timeseries"></canvas>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ====================================================================
+         TAB 2: REAL-TIME AQI FORECASTING SIMULATOR
+         ==================================================================== -->
+    <main class="tab-content" id="tab-simulator">
+
+      <!-- Atmospheric Presets -->
+      <div class="presets-bar" aria-label="Environmental Presets">
+        <span style="font-size: 0.85rem; color: var(--text-dim); align-self: center; margin-right: 4px;">Quick
+          Presets:</span>
+        <button class="btn-preset" data-preset="clean" id="preset-clean">🌿 Clean Coastal Air</button>
+        <button class="btn-preset active" data-preset="metro" id="preset-metro">🏢 Typical Metro Day</button>
+        <button class="btn-preset" data-preset="inversion" id="preset-inversion">⚠️ Poor Urban Inversion</button>
+        <button class="btn-preset" data-preset="smog" id="preset-smog">🚨 Severe Winter Smog</button>
+      </div>
+
+      <!-- Simulator 2-Column Grid -->
+      <div class="simulator-grid">
+
+        <!-- Left Column: Pollutant Input Sliders -->
+        <div class="glass-card">
+          <h2 class="section-title" style="margin-bottom: 18px;">Atmospheric Criteria Pollutants</h2>
+
+          <!-- PM2.5 -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <div>
+                <span class="slider-name">PM2.5 (Fine Particulate)</span>
+                <span class="slider-desc"> | Combustion exhausts & smoke</span>
+              </div>
+              <span class="slider-val-badge"><span id="val-pm25">60</span> µg/m³</span>
+            </div>
+            <input type="range" min="0" max="500" step="1" value="60" class="custom-range" id="slider-pm25">
+            <div class="range-scale-labels"><span>0</span><span>Safe: 30</span><span>Severe: 250+</span><span>500</span>
+            </div>
+          </div>
+
+          <!-- PM10 -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <div>
+                <span class="slider-name">PM10 (Coarse Particulate)</span>
+                <span class="slider-desc"> | Road dust & industrial debris</span>
+              </div>
+              <span class="slider-val-badge"><span id="val-pm10">125</span> µg/m³</span>
+            </div>
+            <input type="range" min="0" max="600" step="1" value="125" class="custom-range" id="slider-pm10">
+            <div class="range-scale-labels"><span>0</span><span>Safe: 50</span><span>Severe: 430+</span><span>600</span>
+            </div>
+          </div>
+
+          <!-- NO2 -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <div>
+                <span class="slider-name">NO2 (Nitrogen Dioxide)</span>
+                <span class="slider-desc"> | Vehicle exhausts & thermal power</span>
+              </div>
+              <span class="slider-val-badge"><span id="val-no2">42</span> µg/m³</span>
+            </div>
+            <input type="range" min="0" max="250" step="1" value="42" class="custom-range" id="slider-no2">
+            <div class="range-scale-labels"><span>0</span><span>Safe: 40</span><span>Severe: 200+</span><span>250</span>
+            </div>
+          </div>
+
+          <!-- CO -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <div>
+                <span class="slider-name">CO (Carbon Monoxide)</span>
+                <span class="slider-desc"> | Incomplete vehicle combustion</span>
+              </div>
+              <span class="slider-val-badge"><span id="val-co">1.4</span> mg/m³</span>
+            </div>
+            <input type="range" min="0" max="25" step="0.1" value="1.4" class="custom-range" id="slider-co">
+            <div class="range-scale-labels"><span>0.0</span><span>Safe: 1.0</span><span>Severe:
+                17.0+</span><span>25.0</span></div>
+          </div>
+
+          <!-- O3 -->
+          <div class="slider-group" style="margin-bottom: 4px;">
+            <div class="slider-header">
+              <div>
+                <span class="slider-name">O3 (Ground Ozone)</span>
+                <span class="slider-desc"> | Sunlight photochemical reaction</span>
+              </div>
+              <span class="slider-val-badge"><span id="val-o3">45</span> µg/m³</span>
+            </div>
+            <input type="range" min="0" max="250" step="1" value="45" class="custom-range" id="slider-o3">
+            <div class="range-scale-labels"><span>0</span><span>Safe: 50</span><span>Severe: 200+</span><span>250</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Model Forecasts & Hero Card -->
+        <div style="display: flex; flex-direction: column; gap: 18px;">
+
+          <!-- Individual Model Projections -->
+          <div class="models-forecast-grid">
+            <div class="model-forecast-card rf">
+              <div class="mfc-title">Random Forest</div>
+              <div class="mfc-val" id="pred-val-rf">--</div>
+              <div class="mfc-sub">Bagging Tree Ensemble</div>
+            </div>
+
+            <div class="model-forecast-card svr">
+              <div class="mfc-title">SVR Model</div>
+              <div class="mfc-val" id="pred-val-svr">--</div>
+              <div class="mfc-sub">RBF Margin Hyperplane</div>
+            </div>
+
+            <div class="model-forecast-card gbr">
+              <div class="mfc-title">Gradient Boost</div>
+              <div class="mfc-val" id="pred-val-gbr">--</div>
+              <div class="mfc-sub">Additive Boosting Stage</div>
+            </div>
+          </div>
+
+          <!-- Hero Consensus Forecast Card -->
+          <div class="glass-card forecast-hero-box">
+            <div class="kpi-title" style="justify-content: center; margin-bottom: 2px;">
+              <span>Consensus Forecast (Ensemble Average)</span>
+            </div>
+            <div class="hero-consensus-val" id="hero-consensus-val">--</div>
+            <div>
+              <span class="aqi-pill" id="hero-aqi-pill">Calculating...</span>
+            </div>
+            <p class="advisory-text" id="hero-advisory-text">
+              Adjust pollutant sliders or pick a preset to forecast real-time air quality.
+            </p>
+          </div>
+
+          <!-- Live Input Profile Chart -->
+          <div class="glass-card" style="padding: 16px 20px;">
+            <div class="section-header" style="margin-bottom: 8px;">
+              <span class="section-title" style="font-size: 0.95rem;">Active Pollutant Input Profile</span>
+              <span class="section-subtitle">Concentration Metrics</span>
+            </div>
+            <div style="height: 140px; position: relative;">
+              <canvas id="chart-profile"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div>
+        <b>Air Quality Index (AQI) Comparative Analysis</b>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- JavaScript Client App -->
+  <script src="/static/js/app.js"></script>
+</body>
+
+</html>

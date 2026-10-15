@@ -1,0 +1,44 @@
+{
+    "Random_Forest": {
+        "model_name": "Random Forest Regressor",
+        "rmse": 36.173,
+        "mae": 20.21,
+        "r2_score": 0.8549
+    },
+    "Support_Vector_Regression": {
+        "model_name": "Support Vector Regression (SVR)",
+        "rmse": 36.14,
+        "mae": 20.384,
+        "r2_score": 0.8552
+    },
+    "Gradient_Boosting": {
+        "model_name": "Gradient Boosting Regressor",
+        "rmse": 36.57,
+        "mae": 19.891,
+        "r2_score": 0.8517
+    },
+    "Train_Samples": 21888,
+    "Test_Samples": 5472,
+    "Split_Ratio": "80/19 Chronological",
+    "Feature_Importances": {
+        "Random_Forest": {
+            "PM2.5": 0.1931,
+            "PM10": 0.3743,
+            "NO2": 0.1266,
+            "CO": 0.2773,
+            "O3": 0.0287
+        },
+        "Gradient_Boosting": {
+            "PM2.5": 0.2526,
+            "PM10": 0.2938,
+            "NO2": 0.1263,
+            "CO": 0.3006,
+            "O3": 0.0267
+        },
+        "PM2.5": 0.1931,
+        "PM10": 0.3743,
+        "NO2": 0.1266,
+        "CO": 0.2773,
+        "O3": 0.0287
+    }
+}
