@@ -208,7 +208,7 @@ def predict_aqi():
 
         # Construct DataFrame feature vector to preserve feature names for tree models
         features_df = pd.DataFrame([{
-            'PM2.5': pm25,
+            'PM25': pm25,
             'PM10': pm10,
             'NO2': no2,
             'CO': co,
@@ -224,7 +224,7 @@ def predict_aqi():
         pred_gbr = max(0.0, float(gbr_model.predict(features_df)[0]))
 
         # Consensus ensemble average
-        consensus = round((pred_rf + pred_svr + pred_gbr) / 3.0, 1)
+        consensus = round((pred_rf + pred_svr + pred_gbr) / 2.0, 1)
         cpcb = classify_cpcb_aqi(consensus)
 
         return jsonify({
@@ -237,7 +237,7 @@ def predict_aqi():
             },
             'cpcb': cpcb,
             'inputs': {
-                'PM2.5': pm25,
+                'PM25': pm25,
                 'PM10': pm10,
                 'NO2': no2,
                 'CO': co,
